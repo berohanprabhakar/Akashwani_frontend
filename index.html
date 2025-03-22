@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WebRTC Audio Call</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.5.4/socket.io.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/simple-peer/9.11.1/simplepeer.min.js"></script>
+    <!-- <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: "Poppins", sans-serif;
+      }
+
+      body {
+        background: #1e1e2f;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        text-align: center;
+        flex-direction: column;
+      }
+
+      .container {
+        background: rgba(255, 255, 255, 0.1);
+        padding: 30px;
+        border-radius: 12px;
+        backdrop-filter: blur(10px);
+        box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+        width: 350px;
+      }
+
+      h1 {
+        font-size: 22px;
+        margin-bottom: 10px;
+      }
+
+      #socketId {
+        font-weight: bold;
+        color: #00d4ff;
+      }
+
+      input {
+        width: 100%;
+        padding: 10px;
+        margin-top: 10px;
+        border: none;
+        border-radius: 8px;
+        outline: none;
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+        text-align: center;
+        font-size: 16px;
+      }
+
+      input::placeholder {
+        color: rgba(255, 255, 255, 0.6);
+      }
+
+      .buttons {
+        margin-top: 15px;
+        display: flex;
+        justify-content: space-around;
+      }
+
+      button {
+        padding: 10px 15px;
+        border: none;
+        border-radius: 8px;
+        font-size: 14px;
+        cursor: pointer;
+        transition: 0.3s;
+      }
+
+      .call-btn {
+        background: #00d4ff;
+        color: #1e1e2f;
+        font-weight: bold;
+      }
+
+      .call-btn:hover {
+        background: #008fb3;
+      }
+
+      .end-btn {
+        background: #ff4c4c;
+        color: white;
+        font-weight: bold;
+      }
+
+      .end-btn:hover {
+        background: #b30000;
+      }
+
+      .mute-btn {
+        background: #ffcc00;
+        color: black;
+        font-weight: bold;
+      }
+
+      .mute-btn:hover {
+        background: #b38f00;
+      }
+      .audio-toggle-btn {
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+        font-weight: bold;
+        padding: 10px 15px;
+        border: none;
+        border-radius: 8px;
+        font-size: 14px;
+        cursor: pointer;
+        transition: 0.3s;
+      }
+
+      .audio-toggle-btn:hover {
+        background: rgba(255, 255, 255, 0.4);
+      }
+
+      .status {
+        margin-top: 15px;
+        font-size: 16px;
+      }
+
+      .status span {
+        font-weight: bold;
+        color: #ffcc00;
+        animation: blink 1s infinite;
+      }
+
+      @keyframes blink {
+        50% {
+          opacity: 0.5;
+        }
+      }
+
+      audio {
+        margin-top: 15px;
+        width: 100%;
+        outline: none;
+      }
+    </style> -->
+    <!-- <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: "Poppins", sans-serif;
+      }
+
+      body {
+        background: #1e1e2f;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        text-align: center;
+        flex-direction: column;
+        padding: 10px;
+      }
+
+      .container {
+        background: rgba(255, 255, 255, 0.1);
+        padding: 25px;
+        border-radius: 12px;
+        backdrop-filter: blur(10px);
+        box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+        width: 90%;
+        max-width: 350px;
+      }
+
+      h1 {
+        font-size: 20px;
+        margin-bottom: 10px;
+      }
+
+      #socketId {
+        font-weight: bold;
+        color: #00d4ff;
+        word-wrap: break-word;
+        font-size: 14px;
+      }
+
+      input {
+        width: 100%;
+        padding: 12px;
+        margin-top: 10px;
+        border: none;
+        border-radius: 8px;
+        outline: none;
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+        text-align: center;
+        font-size: 16px;
+      }
+
+      input::placeholder {
+        color: rgba(255, 255, 255, 0.6);
+      }
+
+      /* Buttons layout */
+      .buttons {
+        margin-top: 15px;
+        display: flex;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+
+      button {
+        flex: 1;
+        min-width: 100px;
+        padding: 12px;
+        border: none;
+        border-radius: 8px;
+        font-size: 14px;
+        cursor: pointer;
+        transition: 0.3s;
+        text-align: center;
+      }
+
+      .call-btn {
+        background: #00d4ff;
+        color: #1e1e2f;
+        font-weight: bold;
+      }
+
+      .call-btn:hover {
+        background: #008fb3;
+      }
+
+      .end-btn {
+        background: #ff4c4c;
+        color: white;
+        font-weight: bold;
+      }
+
+      .end-btn:hover {
+        background: #b30000;
+      }
+
+      .mute-btn {
+        background: #ffcc00;
+        color: black;
+        font-weight: bold;
+      }
+
+      .mute-btn:hover {
+        background: #b38f00;
+      }
+
+      /* Speaker Toggle Button */
+      .audio-toggle-btn {
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+        font-weight: bold;
+        padding: 12px;
+        border: none;
+        border-radius: 8px;
+        font-size: 14px;
+        cursor: pointer;
+        transition: 0.3s;
+      }
+
+      .audio-toggle-btn:hover {
+        background: rgba(255, 255, 255, 0.4);
+      }
+
+      .status {
+        margin-top: 15px;
+        font-size: 16px;
+      }
+
+      .status span {
+        font-weight: bold;
+        color: #ffcc00;
+        animation: blink 1s infinite;
+      }
+
+      @keyframes blink {
+        50% {
+          opacity: 0.5;
+        }
+      }
+
+      audio {
+        margin-top: 15px;
+        width: 100%;
+        outline: none;
+      }
+
+      /* Toast Notification */
+      .toast {
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(0, 0, 0, 0.8);
+        color: white;
+        padding: 12px 20px;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: bold;
+        opacity: 0;
+        transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
+      }
+
+      .toast.show {
+        opacity: 1;
+        transform: translateX(-50%) translateY(-10px);
+      }
+
+      .toast.hide {
+        opacity: 0;
+      }
+      .copy-btn {
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 5px 10px;
+        cursor: pointer;
+        font-size: 12px;
+        margin-left: 8px;
+        transition: 0.3s;
+      }
+
+      .copy-btn:hover {
+        background: rgba(255, 255, 255, 0.4);
+      }
+
+      /* Responsive Adjustments */
+      @media screen and (max-width: 480px) {
+        .container {
+          width: 95%;
+          padding: 15px;
+        }
+
+        h1 {
+          font-size: 18px;
+        }
+
+        input {
+          font-size: 14px;
+          padding: 10px;
+        }
+
+        button {
+          padding: 10px;
+          font-size: 13px;
+          min-width: 80px;
+        }
+
+        .status {
+          font-size: 14px;
+        }
+      }
+    </style> -->
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <div class="container">
+      <h1>🔊 AAKASHWANI</h1>
+      <!-- <p>Your Socket ID: <span id="socketId">Loading...</span></p> -->
+      <p>
+        Your Socket ID:
+        <span id="socketId">Loading...</span>
+        <button class="copy-btn" onclick="copySocketId()">📋 Copy</button>
+      </p>
+
+      <input type="text" id="callToId" placeholder="Enter Socket ID to Call" />
+
+      <div class="buttons">
+        <button class="call-btn" onclick="callUser()">📞 Call</button>
+        <button class="end-btn" onclick="endCall()">❌ End</button>
+        <button class="mute-btn" onclick="toggleMute()">🔇 Mute</button>
+        <button
+          id="audioToggle"
+          class="audio-toggle-btn"
+          onclick="toggleAudio()"
+        >
+          🔊 Speaker
+        </button>
+      </div>
+
+      <h3 class="status">Call Status: <span id="callStatus">Idle</span></h3>
+      <audio id="remoteAudio" autoplay controls></audio>
+      <!-- Toast Notification -->
+      <div id="toast" class="toast"></div>
+    </div>
+
+    <script src="./script.js"></script>
+
+    <!-- <script>
+      const socket = io("http://192.168.1.7:8000");
+      let peer;
+      let myStream;
+      let isMuted = false;
+      let remoteSocketId = null; // Stores the socket ID of the remote user
+
+      socket.on("connect", () => {
+        document.getElementById("socketId").innerText = socket.id;
+        console.log("Connected to server as", socket.id);
+      });
+
+      socket.on("callIncoming", async (data) => {
+        console.log("Incoming call from:", data.from);
+        if (confirm(`Incoming call from ${data.from}. Accept?`)) {
+          acceptCall(data.from, data.signal);
+        }
+      });
+
+      socket.on("callAccepted", (data) => {
+        console.log("Call accepted, connecting...");
+        peer.signal(data.signal);
+
+        // 🔹 Update call status for the caller
+        document.getElementById("callStatus").innerText = "Connected";
+
+        // 🔹 Hide input field and call button
+        document.getElementById("callToId").style.display = "none";
+      });
+
+      socket.on("endCall", () => {
+        console.log("Call ended by the other user.");
+
+        if (peer) {
+          peer.destroy();
+          peer = null;
+        }
+
+        document.getElementById("callStatus").innerText = "Idle";
+        document.getElementById("callToId").style.display = "block";
+      });
+
+      async function getAudioStream() {
+        try {
+          myStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          console.log("✅ Microphone access granted.");
+        } catch (error) {
+          console.error("❌ Error accessing microphone:", error);
+          alert("Please enable microphone permissions.");
+        }
+      }
+
+      async function callUser() {
+        const userToCall = document.getElementById("callToId").value;
+        if (!userToCall) {
+          alert("Enter a Socket ID to call.");
+          return;
+        }
+        remoteSocketId = userToCall;
+
+        await getAudioStream();
+
+        peer = new SimplePeer({
+          initiator: true,
+          trickle: false,
+          stream: myStream,
+        });
+
+        peer.on("signal", (signal) => {
+          socket.emit("callUser", { userToCall, from: socket.id, signal });
+        });
+
+        peer.on("stream", (stream) => {
+          playRemoteAudio(stream);
+        });
+
+        peer.on("connect", () => {
+          document.getElementById("callStatus").innerText = "Connected";
+
+          // 🔹 Hide input field and call button
+          document.getElementById("callToId").style.display = "none";
+        });
+
+        peer.on("close", () => {
+          endCall();
+        });
+
+        peer.on("error", (err) => {
+          console.error("Peer Error:", err);
+        });
+      }
+
+      async function acceptCall(from, incomingSignal) {
+        remoteSocketId = from;
+        await getAudioStream();
+
+        peer = new SimplePeer({
+          initiator: false,
+          trickle: false,
+          stream: myStream,
+        });
+
+        peer.on("signal", (signal) => {
+          socket.emit("acceptCall", { to: from, signal });
+        });
+
+        peer.on("stream", (stream) => {
+          playRemoteAudio(stream);
+        });
+
+        peer.on("connect", () => {
+          document.getElementById("callStatus").innerText = "Connected";
+
+          // 🔹 Hide input field and call button
+          document.getElementById("callToId").style.display = "none";
+        });
+
+        peer.signal(incomingSignal);
+      }
+
+      function playRemoteAudio(stream) {
+        const audioElement = document.getElementById("remoteAudio");
+        audioElement.srcObject = stream;
+      }
+
+      function toggleMute() {
+        if (!myStream) return;
+
+        isMuted = !isMuted;
+        myStream
+          .getAudioTracks()
+          .forEach((track) => (track.enabled = !isMuted));
+
+        document.querySelector(".mute-btn").innerText = isMuted
+          ? "🔊 Unmute"
+          : "🔇 Mute";
+        console.log(isMuted ? "🎙️ Muted" : "🎙️ Unmuted");
+      }
+
+      function endCall() {
+        if (peer) {
+          console.log("Ending call...");
+
+          // Notify the other user that the call is ending
+          socket.emit("endCall", { target: remoteSocketId });
+
+          peer.destroy();
+          peer = null;
+          document.getElementById("callStatus").innerText = "Idle";
+          document.getElementById("callToId").style.display = "block";
+        }
+      }
+
+      let isSpeakerOn = false;
+
+      function toggleAudio() {
+        const audioBtn = document.getElementById("audioToggle");
+
+        if (isSpeakerOn) {
+          audioBtn.textContent = "🔊 Speaker";
+          audioBtn.style.background = "rgba(255, 255, 255, 0.2)";
+          setAudioOutput("default");
+        } else {
+          audioBtn.textContent = "🎧 Earpiece";
+          audioBtn.style.background = "#00d4ff";
+          setAudioOutput("speaker");
+        }
+        isSpeakerOn = !isSpeakerOn;
+      }
+
+      function setAudioOutput(device) {
+        if (typeof audioElement !== "undefined" && audioElement.setSinkId) {
+          audioElement
+            .setSinkId(device)
+            .catch((err) => console.error("Audio switch failed", err));
+        } else {
+          showToast("Audio switching not supported");
+        }
+      }
+
+      function showToast(message) {
+        const toast = document.getElementById("toast");
+        if (!toast) return; // Avoids error if toast is missing
+
+        toast.textContent = message;
+        toast.classList.add("show");
+
+        setTimeout(() => {
+          toast.classList.add("hide");
+          setTimeout(() => {
+            toast.classList.remove("show", "hide");
+          }, 500);
+        }, 2500);
+      }
+
+      function copySocketId() {
+        const socketIdElement = document.getElementById("socketId");
+        if (!socketIdElement) return;
+
+        const socketId = socketIdElement.textContent;
+
+        navigator.clipboard
+          .writeText(socketId)
+          .then(() => {
+            showToast("✅ Socket ID copied!");
+          })
+          .catch((err) => {
+            console.error("Failed to copy: ", err);
+            showToast("❌ Failed to copy ID!");
+          });
+      }
+
+      // function toggleAudioOutput() {
+      //   const audioElement = document.getElementById("remoteAudio");
+      //   const audioToggleBtn = document.querySelector(".audio-toggle-btn");
+
+      //   if (!audioElement.setSinkId) {
+      //     console.warn(
+      //       "Audio output switching is not supported in this browser."
+      //     );
+      //     return;
+      //   }
+
+      //   if (isSpeakerOn) {
+      //     audioElement
+      //       .setSinkId("default") // Switch to Earpiece
+      //       .then(() => {
+      //         console.log("Switched to Earpiece");
+      //         audioToggleBtn.innerHTML = "🎧 Earpiece";
+      //       })
+      //       .catch((err) => console.error("Error switching to Earpiece:", err));
+      //   } else {
+      //     audioElement
+      //       .setSinkId("speaker") // Switch to Speaker
+      //       .then(() => {
+      //         console.log("Switched to Speaker");
+      //         audioToggleBtn.innerHTML = "🔊 Speaker";
+      //       })
+      //       .catch((err) => console.error("Error switching to Speaker:", err));
+      //   }
+
+      //   isSpeakerOn = !isSpeakerOn;
+      // }
+    </script> -->
+  </body>
+</html>
