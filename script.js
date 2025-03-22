@@ -112,6 +112,22 @@ async function acceptCall(from, incomingSignal) {
 
     // 🔹 Hide input field and call button
     document.getElementById("callToId").style.display = "none";
+    if ("mediaSession" in navigator) {
+      navigator.mediaSession.metadata = new MediaMetadata({
+          title: "WebRTC Call",
+          artist: "Your App",
+          artwork: [{ src: "/icon.png", sizes: "96x96", type: "image/png" }]
+      });
+  
+      navigator.mediaSession.setActionHandler("play", () => {
+          document.getElementById("remoteAudio").play();
+      });
+  
+      navigator.mediaSession.setActionHandler("pause", () => {
+          document.getElementById("remoteAudio").pause();
+      });
+  }
+  
   });
 
   peer.signal(incomingSignal);
@@ -120,7 +136,17 @@ async function acceptCall(from, incomingSignal) {
 function playRemoteAudio(stream) {
   const audioElement = document.getElementById("remoteAudio");
   audioElement.srcObject = stream;
+
+  audioElement.play().catch((error) => {
+    console.log("Auto-play blocked by browser", error);
+  });
+
+  // ✅ Play a silent sound to keep WebRTC active in the background
+  const bgAudio = document.getElementById("backgroundAudio");
+  bgAudio.src = "data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YQAAAAA="; // Silent audio
+  bgAudio.play().catch((err) => console.log("Background audio play blocked", err));
 }
+
 
 function toggleMute() {
   if (!myStream) return;
